@@ -36,7 +36,7 @@ def send_snw(sock):
 	# Fill out the code here
     seq = 0
     while(seq < 20):
-        data = generate_payload(40).encode()
+        data = generate_payload(PACKET_SIZE).encode()
         pkt = packet.make(seq, data)
         print("Sending seq# ", seq, "\n")
         udt.send(pkt, sock, RECEIVER_ADDR)
@@ -63,14 +63,20 @@ def receive_gbn(sock):
 
 # Main function
 if __name__ == '__main__':
-    # if len(sys.argv) != 2:
-    #     print('Expected filename as command line argument')
-    #     exit()
+    if len(sys.argv) != 2:
+         print('Expected filename as command line argument')
+         exit()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(SENDER_ADDR)
 
-    # filename = sys.argv[1]
+    filename = sys.argv[1]
+
+    file = open(filename, 'r')
+
+    bio = file.read()
+
+    print(bio)
 
     send_snw(sock)
     sock.close()
