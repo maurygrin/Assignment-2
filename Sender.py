@@ -15,6 +15,7 @@ SENDER_ADDR = ('localhost', 9090)
 SLEEP_INTERVAL = 0.05 # (In seconds)
 TIMEOUT_INTERVAL = 0.5
 WINDOW_SIZE = 4
+tmp = 0
 
 # You can use some shared resources over the two threads
 # base = 0
@@ -26,7 +27,8 @@ WINDOW_SIZE = 4
 # Generate random payload of any length
 def generate_payload(length=10):
     letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
+    result_str = ''.join(bio[i] for i in range(length))
+    tmp = tmp + length
 
     return result_str
 
@@ -77,7 +79,8 @@ if __name__ == '__main__':
 
     bio = file.read()
 
-    tmp = 0
+    print(generate_payload(PACKET_SIZE))
+
     for i in range(tmp,len(bio)):
         print(bio[i], end ="")
         if(i == 512):
