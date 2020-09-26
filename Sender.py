@@ -15,7 +15,7 @@ SENDER_ADDR = ('localhost', 9090)
 SLEEP_INTERVAL = 0.05 # (In seconds)
 TIMEOUT_INTERVAL = 0.5
 WINDOW_SIZE = 4
-tmp = 0
+
 
 # You can use some shared resources over the two threads
 # base = 0
@@ -28,6 +28,7 @@ tmp = 0
 def generate_payload(length=10):
     letters = string.ascii_lowercase
     result_str = ''.join(bio[i] for i in range(length))
+    tmp = 0
     tmp = tmp + length
 
     return result_str
@@ -81,14 +82,7 @@ if __name__ == '__main__':
 
     print(generate_payload(PACKET_SIZE))
 
-    for i in range(tmp,len(bio)):
-        print(bio[i], end ="")
-        if(i == 512):
-            tmp = tmp + 1
 
-    while(tmp < len(bio)):
-        print(bio[tmp], end="")
-        tmp = tmp + 1
 
 
    # send_snw(sock)
