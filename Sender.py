@@ -35,7 +35,7 @@ def generate_payload(length=10):
 
 # Send using Stop_n_wait protocol
 def send_snw(sock):
-	# Fill out the code here
+    # Fill out the code here
 
     seq = 0
     while(seq < 20):
@@ -81,6 +81,16 @@ if __name__ == '__main__':
 
     print('FIRST: ' + generate_payload(PACKET_SIZE))
     print('SECOND: ' + generate_payload(PACKET_SIZE))
+
+    count = 0
+    while True:
+        num, remainder = divmod(len(bio), PACKET_SIZE)
+        if remainder:
+            break
+        else:
+            count += 1
+    print(len(bio))
+    print(num)
 
    # send_snw(sock)
     sock.close()
