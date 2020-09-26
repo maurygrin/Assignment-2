@@ -77,8 +77,8 @@ if __name__ == '__main__':
 
     bio = file.read()
 
-    for i in range(0,3):
-        print(bio[i])
+    for i in range(0,512):
+        print(bio[i], end =" ")
 
 
    # send_snw(sock)
