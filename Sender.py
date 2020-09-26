@@ -34,6 +34,7 @@ def generate_payload(length=10):
 # Send using Stop_n_wait protocol
 def send_snw(sock):
 	# Fill out the code here
+
     seq = 0
     while(seq < 20):
         data = generate_payload(PACKET_SIZE).encode()
@@ -76,9 +77,7 @@ if __name__ == '__main__':
 
     bio = file.read()
 
-    print(bio)
+    print(bio for i in range(0, 3))
 
-    send_snw(sock)
+   # send_snw(sock)
     sock.close()
-
-
