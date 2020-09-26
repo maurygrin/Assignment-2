@@ -15,6 +15,7 @@ SENDER_ADDR = ('localhost', 9090)
 SLEEP_INTERVAL = 0.05 # (In seconds)
 TIMEOUT_INTERVAL = 0.5
 WINDOW_SIZE = 4
+TEMP = 0
 
 
 # You can use some shared resources over the two threads
@@ -26,11 +27,9 @@ WINDOW_SIZE = 4
 
 # Generate random payload of any length
 def generate_payload(length=10):
-    letters = string.ascii_lowercase
-    result_str = ''.join(bio[i] for i in range(length))
-    tmp = 0
-    tmp = tmp + length
-
+    global TEMP
+    result_str = ''.join(bio[TEMP] for TEMP in range(length))
+    TEMP = TEMP + length
     return result_str
 
 
@@ -80,10 +79,8 @@ if __name__ == '__main__':
 
     bio = file.read()
 
-    print(generate_payload(PACKET_SIZE))
-
-
-
+    print('FIRST: ' + generate_payload(PACKET_SIZE))
+    print('SECOND: ' + generate_payload(PACKET_SIZE))
 
    # send_snw(sock)
     sock.close()
