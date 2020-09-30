@@ -42,24 +42,22 @@ def total_seq(length):
             count += 1
     return num + 1
 
-
-
 # Send using Stop_n_wait protocol
 def send_snw(sock):
     seq = 0
-    while (seq < total_seq(len(bio))):
-        if seq == total_seq:
+    last_seq = total_seq(len(bio))
+    while (seq < last_seq):
+        if seq == last_seq - 1:
             data = generate_payload(len(bio) - TEMP).encode()
         else:
             data = generate_payload(PACKET_SIZE).encode()
-        #pkt = packet.make(seq, data)
+        pkt = packet.make(seq, data)
         print("Sending seq# ", seq, "\n")
-        print(data)
-        #udt.send(pkt, sock, RECEIVER_ADDR)
+        udt.send(pkt, sock, RECEIVER_ADDR)
         seq = seq + 1
-        #time.sleep(TIMEOUT_INTERVAL)
-    #pkt = packet.make(seq, "END".encode())
-    #udt.send(pkt, sock, RECEIVER_ADDR)
+        time.sleep(TIMEOUT_INTERVAL)
+    pkt = packet.make(seq, "END".encode())
+    udt.send(pkt, sock, RECEIVER_ADDR)
 
 
 # Send using GBN protocol
@@ -81,8 +79,6 @@ def receive_gbn(sock):
 
 # Main function
 if __name__ == '__main__':
-
-    global COUNT
 
     if len(sys.argv) != 2:
         print('Expected filename as command line argument')
