@@ -12,7 +12,7 @@ from timer import Timer
 PACKET_SIZE = 512
 RECEIVER_ADDR = ('localhost', 8080)
 SENDER_ADDR = ('localhost', 9090)
-SLEEP_INTERVAL = 0.05 # (In seconds)
+SLEEP_INTERVAL = 0.05  # (In seconds)
 TIMEOUT_INTERVAL = 0.5
 WINDOW_SIZE = 4
 TEMP = 0
@@ -28,35 +28,50 @@ TEMP = 0
 # Generate random payload of any length
 def generate_payload(length=10):
     global TEMP
-    result_str = ''.join(bio[TEMP] for TEMP in range(length))
+    result_str = ''.join(bio[i] for i in range(TEMP, TEMP + length))
     TEMP = TEMP + length
     return result_str
+
+def total_seq(length):
+    count = 0
+    while True:
+        num, remainder = divmod(len(bio), PACKET_SIZE)
+        if remainder:
+            break
+        else:
+            count += 1
+    return num + 1
+
 
 
 # Send using Stop_n_wait protocol
 def send_snw(sock):
-    # Fill out the code here
-
     seq = 0
-    while(seq < 20):
-        data = generate_payload(PACKET_SIZE).encode()
-        pkt = packet.make(seq, data)
+    while (seq < total_seq(len(bio))):
+        if seq == total_seq:
+            data = generate_payload(len(bio) - TEMP).encode()
+        else:
+            data = generate_payload(PACKET_SIZE).encode()
+        #pkt = packet.make(seq, data)
         print("Sending seq# ", seq, "\n")
-        udt.send(pkt, sock, RECEIVER_ADDR)
-        seq = seq+1
-        time.sleep(TIMEOUT_INTERVAL)
-    pkt = packet.make(seq, "END".encode())
-    udt.send(pkt, sock, RECEIVER_ADDR)
+        print(data)
+        #udt.send(pkt, sock, RECEIVER_ADDR)
+        seq = seq + 1
+        #time.sleep(TIMEOUT_INTERVAL)
+    #pkt = packet.make(seq, "END".encode())
+    #udt.send(pkt, sock, RECEIVER_ADDR)
+
 
 # Send using GBN protocol
 def send_gbn(sock):
-
     return
+
 
 # Receive thread for stop-n-wait
 def receive_snw(sock, pkt):
     # Fill here to handle acks
     return
+
 
 # Receive thread for GBN
 def receive_gbn(sock):
@@ -66,31 +81,19 @@ def receive_gbn(sock):
 
 # Main function
 if __name__ == '__main__':
+
+    global COUNT
+
     if len(sys.argv) != 2:
-         print('Expected filename as command line argument')
-         exit()
+        print('Expected filename as command line argument')
+        exit()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(SENDER_ADDR)
 
     filename = sys.argv[1]
-
     file = open(filename, 'r')
-
     bio = file.read()
 
-    print('FIRST: ' + generate_payload(PACKET_SIZE))
-    print('SECOND: ' + generate_payload(PACKET_SIZE))
-
-    count = 0
-    while True:
-        num, remainder = divmod(len(bio), PACKET_SIZE)
-        if remainder:
-            break
-        else:
-            count += 1
-    print(len(bio))
-    print(num)
-
-   # send_snw(sock)
+    send_snw(sock)
     sock.close()
