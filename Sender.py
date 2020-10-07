@@ -1,11 +1,8 @@
 import socket
 import sys
-# import _thread
-import time
-import string
+import _thread
 import packet
 import udt
-import random
 from timer import Timer
 
 # Some already defined parameters
@@ -15,21 +12,20 @@ SENDER_ADDR = ('localhost', 9090)
 SLEEP_INTERVAL = 0.05  # (In seconds)
 TIMEOUT_INTERVAL = 0.5
 WINDOW_SIZE = 4
-TEMP = 0
 
 
 # You can use some shared resources over the two threads
-# base = 0
-# mutex = _thread.allocate_lock()
-# timer = Timer(TIMEOUT_INTERVAL)
+base = 0
+mutex = _thread.allocate_lock()
+timer = Timer(TIMEOUT_INTERVAL)
 
 # Need to have two threads: one for sending and another for receiving ACKs
 
 # Generate random payload of any length
 def generate_payload(length=10):
-    global TEMP
-    result_str = ''.join(bio[i] for i in range(TEMP, TEMP + length))
-    TEMP = TEMP + length
+    global base
+    initial_byte = PACKET_SIZE * base
+    result_str = ''.join(bio[i] for i in range(initial_byte, initial_byte + length))
     return result_str
 
 def total_seq(length):
@@ -44,19 +40,28 @@ def total_seq(length):
 
 # Send using Stop_n_wait protocol
 def send_snw(sock):
-    seq = 0
+    global base
+    global mutex
+    global timer
     last_seq = total_seq(len(bio))
-    while (seq < last_seq):
-        if seq == last_seq - 1:
-            data = generate_payload(len(bio) - TEMP).encode()
+    _thread.start_new_thread(receive_snw, (sock, ))
+    while (base < last_seq):
+        #mutex.acquire()
+        if base == last_seq - 1:
+            data = generate_payload(len(bio) - (PACKET_SIZE * base)).encode()
         else:
             data = generate_payload(PACKET_SIZE).encode()
-        pkt = packet.make(seq, data)
-        print("Sending seq# ", seq, "\n")
+        pkt = packet.make(base, data)
+        print('Sending SEQ #', base, "\n")
         udt.send(pkt, sock, RECEIVER_ADDR)
-        seq = seq + 1
-        time.sleep(TIMEOUT_INTERVAL)
-    pkt = packet.make(seq, "END".encode())
+        timer.start()
+       # mutex.release()
+        if timer.timeout():
+            print('===================TIMEOUT====================')
+            timer.stop()
+            print('===================TIMEOUT====================')
+       # mutex.release()
+    pkt = packet.make(base, "END".encode())
     udt.send(pkt, sock, RECEIVER_ADDR)
 
 
@@ -66,9 +71,19 @@ def send_gbn(sock):
 
 
 # Receive thread for stop-n-wait
-def receive_snw(sock, pkt):
-    # Fill here to handle acks
-    return
+def receive_snw(sock):
+    global base
+    global mutex
+    global timer
+    while base < 7:
+        pkt, senderaddr = udt.recv(sock)
+        ack, data = packet.extract(pkt)
+        print('Received ACK #', ack, "\n")
+        if ack >= base:
+          #  mutex.acquire()
+            base += 1
+            timer.stop
+          #  mutex.release()
 
 
 # Receive thread for GBN
