@@ -4,6 +4,7 @@ import _thread
 import packet
 import udt
 from timer import Timer
+import time
 
 # Some already defined parameters
 PACKET_SIZE = 512
@@ -31,7 +32,7 @@ def generate_payload(length=10):
 def total_seq(length):
     count = 0
     while True:
-        num, remainder = divmod(len(bio), PACKET_SIZE)
+        num, remainder = divmod(length, PACKET_SIZE)
         if remainder:
             break
         else:
@@ -45,25 +46,31 @@ def send_snw(sock):
     global timer
     last_seq = total_seq(len(bio))
     _thread.start_new_thread(receive_snw, (sock, ))
-    while (base < last_seq):
-        #mutex.acquire()
+    while (base <= last_seq):
+        mutex.acquire()
         if base == last_seq - 1:
             data = generate_payload(len(bio) - (PACKET_SIZE * base)).encode()
+        elif base == last_seq:
+            print('Transfer complete... Sending FIN\n')
+            data = "END".encode()
         else:
             data = generate_payload(PACKET_SIZE).encode()
         pkt = packet.make(base, data)
         print('Sending SEQ #', base, "\n")
         udt.send(pkt, sock, RECEIVER_ADDR)
-        timer.start()
-       # mutex.release()
+
+        if not timer.running():
+            timer.start()
+
+        while timer.running() and not timer.timeout():
+            mutex.release()
+            time.sleep(SLEEP_INTERVAL)
+            mutex.acquire()
+
         if timer.timeout():
             print('===================TIMEOUT====================')
             timer.stop()
-            print('===================TIMEOUT====================')
-       # mutex.release()
-    pkt = packet.make(base, "END".encode())
-    udt.send(pkt, sock, RECEIVER_ADDR)
-
+        mutex.release()
 
 # Send using GBN protocol
 def send_gbn(sock):
@@ -75,16 +82,15 @@ def receive_snw(sock):
     global base
     global mutex
     global timer
-    while base < 7:
+    while base <= total_seq(len(bio)):
         pkt, senderaddr = udt.recv(sock)
         ack, data = packet.extract(pkt)
         print('Received ACK #', ack, "\n")
         if ack >= base:
-          #  mutex.acquire()
+            mutex.acquire()
             base += 1
             timer.stop
-          #  mutex.release()
-
+            mutex.release()
 
 # Receive thread for GBN
 def receive_gbn(sock):

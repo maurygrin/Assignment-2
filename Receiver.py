@@ -33,12 +33,19 @@ def receive_snw(sock):
             print('This packet was not expected. Sending ACK %d' % expectedPacket)
             pkt = packet.make(expectedPacket)
             udt.send(pkt, sock, senderaddr)
+
+        #elif endStr == 'END':
+         #   pkt = packet.make(expectedPacket)
+          #  udt.send(pkt, sock, senderaddr)
+           # break
+
         else:
             print('Successfully received SEQ #%d. Sending ACK #%d' % (seq, expectedPacket))
             pkt = packet.make(expectedPacket)
             udt.send(pkt, sock, senderaddr)
             expectedPacket += 1
-            file.write(data.decode())
+            if endStr != 'END':
+                file.write(data.decode())
 
 
 # Main function
