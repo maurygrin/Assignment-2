@@ -34,11 +34,6 @@ def receive_snw(sock):
             pkt = packet.make(expectedPacket)
             udt.send(pkt, sock, senderaddr)
 
-        #elif endStr == 'END':
-         #   pkt = packet.make(expectedPacket)
-          #  udt.send(pkt, sock, senderaddr)
-           # break
-
         else:
             print('Successfully received SEQ #%d. Sending ACK #%d' % (seq, expectedPacket))
             pkt = packet.make(expectedPacket)

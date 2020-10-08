@@ -46,7 +46,7 @@ def send_snw(sock):
     global timer
     last_seq = total_seq(len(bio))
     _thread.start_new_thread(receive_snw, (sock, ))
-    while (base <= last_seq):
+    while (base < last_seq):
         mutex.acquire()
         if base == last_seq - 1:
             data = generate_payload(len(bio) - (PACKET_SIZE * base)).encode()
@@ -72,6 +72,11 @@ def send_snw(sock):
             timer.stop()
         mutex.release()
 
+    print('Transfer complete... Sending FIN\n')
+    data = "END".encode()
+    pkt = packet.make(base, data)
+    udt.send(pkt, sock, RECEIVER_ADDR)
+
 # Send using GBN protocol
 def send_gbn(sock):
     return
@@ -82,7 +87,7 @@ def receive_snw(sock):
     global base
     global mutex
     global timer
-    while base <= total_seq(len(bio)):
+    while base < total_seq(len(bio)):
         pkt, senderaddr = udt.recv(sock)
         ack, data = packet.extract(pkt)
         print('Received ACK #', ack, "\n")
