@@ -240,7 +240,7 @@ def receive_gbn(sock):
         print('Received ACK #', ACK, "\n")
 
         # Updates base if ACK is equal or greater than base(Slide window)
-        if ACK >= base:
+        if ACK >= base and ACK != total_SEQ(len(bio)):
             mutex.acquire()
             base = ACK + 1
             timer.stop
